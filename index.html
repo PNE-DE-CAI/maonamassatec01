@@ -1,0 +1,866 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Mão na massa · IA na Educação | Formação URE Caieiras</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Biblioteca jsPDF e html2canvas -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(145deg, #0a2f6c 0%, #041a3a 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #212121;
+        }
+        :root {
+            --azul-escuro: #0a2f6c;
+            --vermelho: #d32f2f;
+            --branco: #ffffff;
+            --cinza-borda: #e0e4e9;
+        }
+        .course-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: #0f1a24;
+            border-radius: 48px;
+            padding: 20px;
+            box-shadow: 0 30px 35px rgba(0,0,0,0.5), inset 0 1px 4px rgba(255,255,200,0.1);
+            border: 1px solid var(--vermelho);
+        }
+        .sheets-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #0a2f6ccc;
+            backdrop-filter: blur(4px);
+            padding: 12px 24px;
+            border-radius: 60px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .logo-area img {
+            max-height: 50px;
+            width: auto;
+            background: white;
+            border-radius: 12px;
+            padding: 4px;
+        }
+        .logo-area span {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #ffec9e;
+        }
+        .course-badge {
+            background: var(--vermelho);
+            color: white;
+            padding: 6px 18px;
+            border-radius: 3rem;
+            font-weight: bold;
+            letter-spacing: 1px;
+            font-size: 0.9rem;
+        }
+        .user-area {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            flex-wrap: wrap;
+            background: rgba(255,255,255,0.15);
+            padding: 6px 16px;
+            border-radius: 40px;
+        }
+        .user-area input, .user-area select {
+            padding: 6px 12px;
+            border-radius: 30px;
+            border: none;
+            font-size: 0.8rem;
+            background: white;
+            font-family: 'Inter', sans-serif;
+        }
+        .save-user-btn, .reset-btn {
+            background: linear-gradient(135deg, #0a2f6c, #052050);
+            color: white;
+            border: none;
+            border-radius: 30px;
+            padding: 5px 14px;
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: 0.1s linear;
+            font-weight: 600;
+        }
+        .save-user-btn:hover, .reset-btn:hover {
+            background: var(--vermelho);
+            transform: translateY(-2px);
+        }
+        .main-dashboard {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        .pratica-area {
+            flex: 1.2;
+            min-width: 480px;
+            background: var(--branco);
+            border-radius: 32px;
+            padding: 24px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+        }
+        .teoria-area {
+            flex: 1;
+            min-width: 380px;
+            background: #fefefe;
+            border-radius: 32px;
+            padding: 24px;
+            max-height: 85vh;
+            overflow-y: auto;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+        }
+        .card-tema {
+            background: #f8fafc;
+            border-radius: 24px;
+            padding: 20px;
+            margin-bottom: 24px;
+            border-left: 5px solid var(--vermelho);
+        }
+        .btn-interativo {
+            background: var(--azul-escuro);
+            color: white;
+            border: none;
+            padding: 8px 18px;
+            border-radius: 40px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 12px;
+            transition: 0.1s;
+            display: inline-block;
+            margin-right: 12px;
+        }
+        .btn-interativo:hover {
+            background: var(--vermelho);
+            transform: translateY(-2px);
+        }
+        .grupo-card {
+            background: white;
+            border-radius: 20px;
+            padding: 16px;
+            margin: 16px 0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            border: 1px solid #e9ecef;
+            transition: 0.2s;
+        }
+        .grupo-card:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(0,0,0,0.1); }
+        .badge-grupo {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 30px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+        .grupo1 { background: #fce8e6; color: #c5221f; }
+        .grupo2 { background: #e8f0fe; color: #1a73e8; }
+        .grupo3 { background: #e6f4ea; color: #137333; }
+        .dica-box {
+            background: #fff8e7;
+            border-left: 4px solid #ff9800;
+            padding: 16px;
+            border-radius: 20px;
+            margin: 16px 0;
+        }
+        .rastro-card {
+            background: #eef3fb;
+            border-radius: 20px;
+            padding: 16px;
+            margin: 12px 0;
+            transition: 0.2s;
+        }
+        .atividade-inline {
+            background: #ffffffdd;
+            border-radius: 20px;
+            padding: 12px;
+            margin-top: 12px;
+            border: 1px solid #cbd5e1;
+        }
+        .atividade-inline textarea, .atividade-inline input {
+            width: 100%;
+            margin-top: 8px;
+            border-radius: 16px;
+            padding: 8px;
+            border: 1px solid #ccc;
+            font-family: 'Inter', sans-serif;
+        }
+        .checklist-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            margin-bottom: 14px;
+        }
+        .checklist-item input {
+            width: 20px;
+            margin-top: 2px;
+            flex-shrink: 0;
+        }
+        footer {
+            text-align: center;
+            margin-top: 2rem;
+            padding: 1rem;
+            color: #b4c8e0;
+            font-size: 0.8rem;
+            border-top: 1px solid #2c4c6e;
+        }
+        input, textarea, select {
+            width: 100%;
+            padding: 10px;
+            border-radius: 16px;
+            border: 1px solid #ccc;
+            margin-top: 6px;
+            margin-bottom: 12px;
+            font-family: 'Inter', sans-serif;
+        }
+        label { font-weight: 600; font-size: 0.85rem; }
+        .resultado-pesquisa {
+            background: #e9ecef;
+            border-radius: 24px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .row-fields {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .row-fields > div {
+            flex: 1;
+            min-width: 140px;
+        }
+        hr {
+            margin: 20px 0;
+            border-color: #ddd;
+        }
+        .respostas-resumo {
+            background: #f9f9ff;
+            border-radius: 20px;
+            padding: 12px;
+            margin-top: 16px;
+            font-size: 0.85rem;
+            border-left: 3px solid var(--azul-escuro);
+        }
+        .respostas-resumo p {
+            margin: 6px 0;
+        }
+        .btn-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 12px;
+        }
+        @media (max-width: 1000px) {
+            .main-dashboard { flex-direction: column; }
+            .pratica-area, .teoria-area { min-width: auto; }
+        }
+    </style>
+</head>
+<body>
+<div class="course-container">
+    <div class="sheets-header">
+        <div class="logo-area">
+            <img src="https://i.ibb.co/0p01LzxB/logo3de.jpg" alt="Logo SEDUC">
+            <span>TECNOLOGIA 2026 - URE CAIEIRAS</span>
+        </div>
+        <div class="course-badge">✋ Mão na massa · IA na Educação</div>
+        <div class="user-area">
+            <input type="text" id="profNome" placeholder="Seu nome completo" value="">
+            <select id="escolaSelect">
+                <option value="">Selecione sua escola</option>
+            </select>
+            <button id="saveUserBtn" class="save-user-btn">Salvar dados</button>
+        </div>
+        <button id="resetBtn" class="reset-btn">↺ Reiniciar atividades</button>
+    </div>
+
+    <div class="main-dashboard">
+        <!-- Área prática: criação do roteiro -->
+        <div class="pratica-area">
+            <h2 style="color: var(--azul-escuro); margin-bottom: 20px;"><i class="fas fa-chalkboard-user"></i> ✨ Construa seu plano de aula com IA</h2>
+            <div class="card-tema">
+                <h3>📌 O caso da Professora Juliana</h3>
+                <p>"Na correção de um trabalho, percebi que vários alunos usaram IA de forma acrítica, apenas copiando o resultado. Isso já aconteceu com você?"</p>
+                <div style="display: flex; gap: 12px; margin-top: 12px;">
+                    <button id="simBtn" class="btn-interativo" style="background:#0a2f6c;">👍 Sim, já aconteceu</button>
+                    <button id="naoBtn" class="btn-interativo" style="background:#5f6368;">👀 Ainda não, mas pode acontecer</button>
+                </div>
+                <div id="reflexaoMsg" style="margin-top: 12px; font-style: italic; color: #555;"></div>
+            </div>
+
+            <h3><i class="fas fa-pen-ruler"></i> Crie seu roteiro de atividade (Mão na massa)</h3>
+            
+            <div class="row-fields">
+                <div>
+                    <label>Disciplina:</label>
+                    <input type="text" id="disciplina" placeholder="Ex: Matemática, Língua Portuguesa...">
+                </div>
+                <div>
+                    <label>Série / Ano:</label>
+                    <input type="text" id="serie" placeholder="Ex: 8º ano, 2ª série EM">
+                </div>
+                <div>
+                    <label>Turma:</label>
+                    <input type="text" id="turma" placeholder="Ex: A, B, C...">
+                </div>
+            </div>
+
+            <label>Temática da atividade (ex: programação, literatura, ciências, matemática):</label>
+            <input type="text" id="tema" placeholder="Ex: Análise de dados climáticos, Criação de histórias...">
+
+            <label>Proposta da atividade (o que o estudante deve fazer, podendo usar IA como ferramenta):</label>
+            <textarea id="proposta" rows="3" placeholder="Descreva a tarefa..."></textarea>
+
+            <label>Como o raciocínio do estudante ficará visível? (ex: mapa de erros, defesa oral, diário de bordo):</label>
+            <textarea id="visibilidade" rows="2" placeholder="Estratégias para tornar o processo explícito..."></textarea>
+
+            <label>Estratégias de verificação da aprendizagem (como saber se ele realmente aprendeu?):</label>
+            <textarea id="verificacao" rows="2" placeholder="Perguntas orais, correção cruzada, etc..."></textarea>
+
+            <button id="salvarRoteiroBtn" class="btn-interativo"><i class="fas fa-save"></i> Salvar meu roteiro</button>
+            <div id="roteiroSalvoMsg" style="margin-top: 12px; font-size: 0.85rem; color: green;"></div>
+
+            <div class="dica-box" style="margin-top: 24px;">
+                <i class="fas fa-lightbulb" style="color: #ff9800;"></i> <strong>Dica do MIT:</strong> O problema não é a tecnologia, e sim como ela é utilizada. Estimule o desenvolvimento cognitivo!
+            </div>
+        </div>
+
+        <!-- Área teórica e interativa: pesquisa MIT, atividades de checklist, rastros e compartilhamento -->
+        <div class="teoria-area">
+            <h2 style="color: var(--azul-escuro);"><i class="fas fa-brain"></i> Sistematização · Pesquisa do MIT</h2>
+            <p>Estudo com 54 participantes (MIT, Harvard) – escrever ensaio em 20 minutos sobre temas como "Felicidade".</p>
+
+            <div class="grupo-card">
+                <div class="badge-grupo grupo1">🧠 Grupo 1 · Só IA</div>
+                <p><strong>Resultados:</strong> Menor conectividade cerebral; 83% não conseguiram citar trechos que escreveram; textos muito parecidos; aluno não se sente “dono” do trabalho.</p>
+                <button class="btn-interativo btn-detalhe" data-grupo="1" style="font-size:0.7rem; padding:4px 12px;">Ver detalhes</button>
+            </div>
+            <div class="grupo-card">
+                <div class="badge-grupo grupo2">🔍 Grupo 2 · IA + Google (pesquisa ativa)</div>
+                <p><strong>Resultados:</strong> Maior atividade cerebral nas áreas visuais e de curadoria; retenção da informação maior que grupo 1; ainda sob influência do Google, limitando diversidade.</p>
+                <button class="btn-interativo btn-detalhe" data-grupo="2" style="font-size:0.7rem; padding:4px 12px;">Ver detalhes</button>
+            </div>
+            <div class="grupo-card">
+                <div class="badge-grupo grupo3">📝 Grupo 3 · Só Google (sem IA generativa)</div>
+                <p><strong>Resultados:</strong> Maior e mais complexa conectividade cerebral; textos mais variados e únicos; quase todos lembraram e citaram o que escreveram.</p>
+                <button class="btn-interativo btn-detalhe" data-grupo="3" style="font-size:0.7rem; padding:4px 12px;">Ver detalhes</button>
+            </div>
+
+            <div id="detalheGrupo" class="resultado-pesquisa" style="display: none;"></div>
+
+            <!-- CHECK-UP DO APRENDIZADO: ATIVIDADE COM CHECKLIST -->
+            <h3><i class="fas fa-clipboard-list"></i> Fica a dica! Check-up do aprendizado</h3>
+            <div class="dica-box" style="background: #eaf7ea;">
+                <p><strong>📋 Checklist do professor: uso crítico da IA pelos estudantes</strong><br>
+                Marque os itens que você conseguiu observar ou planeja implementar em sua prática:</p>
+                <div id="checklistAtividade">
+                    <div class="checklist-item">
+                        <input type="checkbox" id="check1"> 
+                        <label for="check1">O aluno explica com suas palavras o que a IA gerou.</label>
+                    </div>
+                    <div class="checklist-item">
+                        <input type="checkbox" id="check2"> 
+                        <label for="check2">O aluno identifica e corrige um erro proposital inserido no texto da IA.</label>
+                    </div>
+                    <div class="checklist-item">
+                        <input type="checkbox" id="check3"> 
+                        <label for="check3">O aluno compara o resultado da IA com outra fonte confiável (livro, site, colega).</label>
+                    </div>
+                    <div class="checklist-item">
+                        <input type="checkbox" id="check4"> 
+                        <label for="check4">O aluno justifica porque escolheu determinado prompt ou abordagem.</label>
+                    </div>
+                    <div class="checklist-item">
+                        <input type="checkbox" id="check5"> 
+                        <label for="check5">O aluno apresenta um "diário de bordo" com o passo a passo do seu raciocínio.</label>
+                    </div>
+                </div>
+                <button id="salvarChecklistBtn" class="btn-interativo" style="margin-top: 8px; background: #2e7d32;"><i class="fas fa-save"></i> Salvar meu checklist</button>
+                <div id="checklistFeedback" style="margin-top: 10px; font-size: 0.8rem; color: #1f4f1f;"></div>
+            </div>
+
+            <!-- RASTROS DE APRENDIZAGEM COM ATIVIDADES PRÁTICAS -->
+            <h3>📌 Tornando o raciocínio visível (rastros de aprendizagem)</h3>
+            
+            <div class="rastro-card">
+                <i class="fas fa-map-marked-alt"></i> <strong>Mapa de erros:</strong> O aluno circula no texto da IA onde ela foi genérica ou errou, escrevendo a correção ao lado.
+                <div class="atividade-inline">
+                    <p><strong>🧪 Atividade prática:</strong> Simule um pequeno texto gerado por IA com um erro conceitual. Peça para o professor (você) identificar e corrigir.</p>
+                    <label>Texto com erro (exemplo ou real):</label>
+                    <textarea id="mapaErrosTexto" rows="2" placeholder="Ex: 'A água ferve a 90°C ao nível do mar.'"></textarea>
+                    <label>Correção indicada:</label>
+                    <textarea id="mapaErrosCorrecao" rows="2" placeholder="Escreva a correção..."></textarea>
+                    <button class="btn-interativo btn-salvar-mapa" style="margin-top: 4px;">💾 Salvar essa simulação</button>
+                    <div class="feedback-mapa" style="font-size: 0.75rem; color: #0a5e2e; margin-top: 6px;"></div>
+                </div>
+            </div>
+
+            <div class="rastro-card">
+                <i class="fas fa-microphone-alt"></i> <strong>Defesa oral curta:</strong> O estudante explica de forma suscinta o porquê escolheu aquele caminho.
+                <div class="atividade-inline">
+                    <p><strong>🎤 Atividade prática:</strong> Elabore uma pergunta para estimular a defesa oral dos alunos.</p>
+                    <label>Sua pergunta-guia para defesa oral:</label>
+                    <textarea id="defesaOralPergunta" rows="2" placeholder="Ex: 'Por que você escolheu esse argumento para a introdução? Como a IA ajudou ou atrapalhou?'"></textarea>
+                    <button class="btn-interativo btn-salvar-defesa" style="margin-top: 4px;">💾 Salvar pergunta</button>
+                    <div class="feedback-defesa" style="font-size: 0.75rem; color: #0a5e2e; margin-top: 6px;"></div>
+                </div>
+            </div>
+
+            <div class="rastro-card">
+                <i class="fas fa-database"></i> <strong>Planilhas e Python:</strong> Para a IA dar uma fórmula correta, o aluno precisa saber explicar o problema (média, condição, variável).
+                <div class="atividade-inline">
+                    <p><strong>🐍 Desafio rápido:</strong> Crie um enunciado que exija que o aluno entenda o problema antes de pedir ajuda à IA.</p>
+                    <label>Enunciado da atividade (ex: calcular média condicional):</label>
+                    <textarea id="planilhaEnunciado" rows="2" placeholder="Ex: 'Uma turma tem notas 7, 8, 5, 9. Peça à IA para calcular a média apenas das notas acima de 6. Explique o raciocínio.'"></textarea>
+                    <button class="btn-interativo btn-salvar-planilha" style="margin-top: 4px;">💾 Salvar enunciado</button>
+                    <div class="feedback-planilha" style="font-size: 0.75rem; color: #0a5e2e; margin-top: 6px;"></div>
+                </div>
+            </div>
+
+            <!-- SEÇÃO COMPARTILHAMENTO E REFLEXÃO (com botões para ver roteiro e gerar PDF) -->
+            <hr>
+            <h3>📢 Compartilhamento e reflexão</h3>
+            <div class="card-tema">
+                <p><strong>Professor(a):</strong> <span id="profNomeExibido">(não informado)</span></p>
+                <p><strong>Escola:</strong> <span id="escolaExibida">(não selecionada)</span></p>
+                <p><strong>Disciplina:</strong> <span id="disciplinaExibida">(não definida)</span></p>
+                <p><strong>Série/Ano:</strong> <span id="serieExibida">(não definida)</span></p>
+                <p><strong>Turma:</strong> <span id="turmaExibida">(não definida)</span></p>
+                <p><strong>Temática:</strong> <span id="temaExibido">(nenhum ainda)</span></p>
+                <p><strong>Visibilidade do raciocínio:</strong> <span id="visibilidadeExibido">(nenhum)</span></p>
+                
+                <!-- Resumo das atividades práticas -->
+                <div id="respostasAtividades" class="respostas-resumo">
+                    <strong>📌 Suas respostas nas atividades práticas:</strong><br>
+                    <div id="checklistResumo">Carregando checklist...</div>
+                    <div id="mapaResumo">Carregando mapa de erros...</div>
+                    <div id="defesaResumo">Carregando defesa oral...</div>
+                    <div id="planilhaResumo">Carregando planilha/Python...</div>
+                </div>
+                
+                <div class="btn-group">
+                    <button id="mostrarRoteiroBtn" class="btn-interativo">Ver meu roteiro salvo (completo)</button>
+                    <button id="gerarPdfBtn" class="btn-interativo" style="background: #b33b2c;"><i class="fas fa-file-pdf"></i> 📄 Gerar PDF do planejamento completo</button>
+                </div>
+            </div>
+
+            <div style="text-align: center; font-size: 0.8rem; color: #5f6368; margin-top: 20px;">
+                <i class="fas fa-lightbulb"></i> Use estas atividades em sala e adapte conforme sua realidade.
+            </div>
+        </div>
+    </div>
+    <footer>
+        ✅ Formação "Mão na massa – Uso educacional de IA" · Baseado no estudo do MIT Media Lab e nas diretrizes da URE Caieiras.<br>
+        Planeje, reflita e evite o "uso vazio" da IA. O problema não é a tecnologia, é como a usamos.
+    </footer>
+</div>
+
+<script>
+    // ---------- LISTA DE ESCOLAS ----------
+    const escolasLista = [
+        "E.E. ADAIL JARBAS DUCLOS", "E.E. AFONSO MORENO", "E.E. ALADINO POLON", "E.E. ALBERTO GRAF – CAPITÃO",
+        "E.E. ALBINO FIORE", "E.E. ALFRIED THEODOR WEISZFLOG", "E.E. ANA MARIA GARRIDO ORLANDIN – PROF.ª",
+        "E.E. APARECIDO ROBERTO TONELLOTTI – PROF.", "E.E. ARMANDO SESTINI", "E.E. ARTHUR WEINGRILL",
+        "E.E. AZEVEDO SOARES", "E.E. BAIRRO DO ITAIM", "E.E. BAIRRO JUNDIAIZINHO", "E.E. BELÉM DA SERRA",
+        "E.E. BENEDITO APARECIDO TAVARES – PROF.", "E.E. BENEDITO FAGUNDES MARQUES",
+        "E.E. BUENO DE AZEVEDO FILHO – PROF.", "E.E. CARLOS AUGUSTO DE PÁDUA FLEURY – PROF.",
+        "E.E. CELESTINA VALENTE LENGENFELDER – PROF.ª", "E.E. CHÁCARA CAMPONESA/ Jd Vassouras",
+        "E.E. DOMINGOS CAMBIAGHI – PROF.", "E.E. ÉLCIO JOSÉ PEREIRA COTRIM – PROF.",
+        "E.E. ELVIRA PARADA MANGA – PROF.ª", "E.E. FRANCISCO GONÇALVES VIEIRA – PROFº",
+        "E.E. HERMELINA DE ALBUQUERQUE PASSARELLA – PROF.ª", "E.E. IRACI SARTORI VIEIRA DA SILVA – PROF.ª",
+        "E.E. ISAÍAS LUIZ MATIAZZO", "E.E. ISAURA DE MIRANDA BOTTO – PROFª", "E.E. ISAURA VALENTINI HANSER – PROFª",
+        "E.E. IVONE DOS ANJOS DA SILVA CAMPOS – PROF.ª", "E.E. JARDIM ALEGRIA II", "E.E. JARDIM DAS ROSAS",
+        "E.E. JARDIM SÃO FRANCISCO", "E.E. JARDIM SILVIA II", "E.E. JOAQUIM MARQUES DA SILVA SOBRINHO – TTE.",
+        "E.E. JOCIMARA VIEIRA DA SILVA – PROF.ª", "E.E. JOSÉ CARLOS DA SILVA JUNIOR",
+        "E.E. JOSÉ DE BARROS MARTINS – EDITOR", "E.E. JOSÉ PARADA – PROF.", "E.E. JOSÉ ROBERTO MELCHIOR – DR.",
+        "E.E. KÁTIA MARIA TARIFA LEME TONELLI – PROF.ª", "E.E. LENITA CORRÊA CAMARGO – PROF.ª",
+        "E.E. LUIZ ALEXANDRE DOS SANTOS – VEREADOR", "E.E. LYDIA SCALET WALKER – PROF.ª",
+        "E.E. MARIA ZEZA GOMES DE OLIVEIRA", "E.E. MARIO TOLEDO DE MORAES – DR.", "E.E. NAIR HANNICKEL ROMARO",
+        "E.E. NELSON MANZANARES – DR.", "E.E. NIDE ZAIM CARDOSO – PROF.ª", "E.E. ODARICO OLIVEIRA NASCIMENTO – PROF.",
+        "E.E. OTTO WEISZFLOG", "E.E. OZILDE ALBUQUERQUE PASSARELLA – DR.", "E.E. PARQUE CENTO E VINTE II",
+        "E.E. PAULO DUARTE", "E.E. PEDRO GALRÃO DO NASCIMENTO", "E.E. PEDRO LELIS DE SOUZA – PREFEITO",
+        "E.E. PEDRO PAULO AGUIAR", "E.E. PIETRO PETRI", "E.E. RITUCO MITANI – PROF.ª",
+        "E.E. ROGÉRIO LEVORIN – PROF.", "E.E. SUZANA DIAS", "E.E. ULYSSES SANCHES RAMIRES – PROF.",
+        "E.E. VINCENZO LOBASSI", "E.E. WALTER RIBAS DE ANDRADE – PROF.", "E.E. WALTHER WEISZFLOG",
+        "E.E. ZILTON BICUDO – PROF.", "E.E. OLINDO DÁRTORA – DR."
+    ];
+    const escolaSelect = document.getElementById('escolaSelect');
+    escolasLista.forEach(escola => {
+        const opt = document.createElement('option');
+        opt.value = escola;
+        opt.textContent = escola;
+        escolaSelect.appendChild(opt);
+    });
+
+    // Dados principais
+    let profNome = "", profEscola = "";
+    let roteiro = { 
+        tema: "", proposta: "", visibilidade: "", verificacao: "",
+        disciplina: "", serie: "", turma: "",
+        professorNome: "", professorEscola: ""
+    };
+
+    // Função para atualizar o resumo das atividades na área de compartilhamento
+    function atualizarResumoAtividades() {
+        const savedChecklist = localStorage.getItem("mao_massa_checklist");
+        let checklistText = "Nenhum item marcado ainda.";
+        if(savedChecklist) {
+            const checks = JSON.parse(savedChecklist);
+            const itens = [];
+            if(checks.c1) itens.push("✓ Explica com suas palavras");
+            if(checks.c2) itens.push("✓ Identifica e corrige erro");
+            if(checks.c3) itens.push("✓ Compara com outras fontes");
+            if(checks.c4) itens.push("✓ Justifica escolha do prompt");
+            if(checks.c5) itens.push("✓ Diário de bordo");
+            if(itens.length) checklistText = itens.join(" · ");
+            else checklistText = "Nenhum item marcado.";
+        }
+        document.getElementById('checklistResumo').innerHTML = `<strong>📋 Checklist:</strong> ${checklistText}`;
+
+        const savedMapa = localStorage.getItem("mao_massa_mapa_erros");
+        let mapaText = "Nenhuma simulação salva.";
+        if(savedMapa) {
+            const m = JSON.parse(savedMapa);
+            if(m.texto || m.correcao) mapaText = `Texto: "${m.texto || '—'}" → Correção: "${m.correcao || '—'}"`;
+        }
+        document.getElementById('mapaResumo').innerHTML = `<strong>🗺️ Mapa de erros:</strong> ${mapaText}`;
+
+        const savedDefesa = localStorage.getItem("mao_massa_defesa_oral");
+        let defesaText = "Nenhuma pergunta salva.";
+        if(savedDefesa && savedDefesa.trim()) defesaText = `"${savedDefesa}"`;
+        document.getElementById('defesaResumo').innerHTML = `<strong>🎤 Defesa oral:</strong> ${defesaText}`;
+
+        const savedPlanilha = localStorage.getItem("mao_massa_planilha");
+        let planilhaText = "Nenhum enunciado salvo.";
+        if(savedPlanilha && savedPlanilha.trim()) planilhaText = `"${savedPlanilha}"`;
+        document.getElementById('planilhaResumo').innerHTML = `<strong>📊 Planilhas/Python:</strong> ${planilhaText}`;
+    }
+
+    function loadUserData() {
+        const savedNome = localStorage.getItem("mao_massa_nome");
+        const savedEscola = localStorage.getItem("mao_massa_escola");
+        if(savedNome) { document.getElementById('profNome').value = savedNome; profNome = savedNome; }
+        if(savedEscola) { document.getElementById('escolaSelect').value = savedEscola; profEscola = savedEscola; }
+        
+        const savedRoteiro = localStorage.getItem("mao_massa_roteiro");
+        if(savedRoteiro) {
+            try {
+                const parsed = JSON.parse(savedRoteiro);
+                roteiro = { ...roteiro, ...parsed };
+                document.getElementById('tema').value = roteiro.tema || "";
+                document.getElementById('proposta').value = roteiro.proposta || "";
+                document.getElementById('visibilidade').value = roteiro.visibilidade || "";
+                document.getElementById('verificacao').value = roteiro.verificacao || "";
+                document.getElementById('disciplina').value = roteiro.disciplina || "";
+                document.getElementById('serie').value = roteiro.serie || "";
+                document.getElementById('turma').value = roteiro.turma || "";
+                atualizarExibicaoRoteiro();
+            } catch(e) {}
+        }
+        const savedChecklist = localStorage.getItem("mao_massa_checklist");
+        if(savedChecklist) {
+            const checks = JSON.parse(savedChecklist);
+            document.getElementById('check1').checked = checks.c1 || false;
+            document.getElementById('check2').checked = checks.c2 || false;
+            document.getElementById('check3').checked = checks.c3 || false;
+            document.getElementById('check4').checked = checks.c4 || false;
+            document.getElementById('check5').checked = checks.c5 || false;
+        }
+        const savedMapa = localStorage.getItem("mao_massa_mapa_erros");
+        if(savedMapa) { const m = JSON.parse(savedMapa); document.getElementById('mapaErrosTexto').value = m.texto || ''; document.getElementById('mapaErrosCorrecao').value = m.correcao || ''; }
+        const savedDefesa = localStorage.getItem("mao_massa_defesa_oral");
+        if(savedDefesa) document.getElementById('defesaOralPergunta').value = savedDefesa;
+        const savedPlanilha = localStorage.getItem("mao_massa_planilha");
+        if(savedPlanilha) document.getElementById('planilhaEnunciado').value = savedPlanilha;
+
+        atualizarExibicaoDadosPessoais();
+        atualizarResumoAtividades();
+    }
+
+    function atualizarExibicaoDadosPessoais() {
+        const nome = document.getElementById('profNome').value.trim() || "(não informado)";
+        const escola = document.getElementById('escolaSelect').value || "(não selecionada)";
+        document.getElementById('profNomeExibido').innerText = nome;
+        document.getElementById('escolaExibida').innerText = escola;
+    }
+
+    function saveUserData() {
+        profNome = document.getElementById('profNome').value.trim();
+        profEscola = document.getElementById('escolaSelect').value;
+        if(profNome) localStorage.setItem("mao_massa_nome", profNome);
+        if(profEscola) localStorage.setItem("mao_massa_escola", profEscola);
+        atualizarExibicaoDadosPessoais();
+        alert("Dados salvos!");
+    }
+
+    function salvarRoteiro() {
+        const nomeProf = document.getElementById('profNome').value.trim() || "Professor não informado";
+        const escolaProf = document.getElementById('escolaSelect').value || "Escola não selecionada";
+        roteiro = {
+            tema: document.getElementById('tema').value,
+            proposta: document.getElementById('proposta').value,
+            visibilidade: document.getElementById('visibilidade').value,
+            verificacao: document.getElementById('verificacao').value,
+            disciplina: document.getElementById('disciplina').value,
+            serie: document.getElementById('serie').value,
+            turma: document.getElementById('turma').value,
+            professorNome: nomeProf,
+            professorEscola: escolaProf
+        };
+        localStorage.setItem("mao_massa_roteiro", JSON.stringify(roteiro));
+        document.getElementById('roteiroSalvoMsg').innerHTML = "✅ Roteiro salvo com sucesso!";
+        setTimeout(() => document.getElementById('roteiroSalvoMsg').innerHTML = "", 4000);
+        atualizarExibicaoRoteiro();
+    }
+
+    function atualizarExibicaoRoteiro() {
+        document.getElementById('disciplinaExibida').innerText = roteiro.disciplina || "(não definida)";
+        document.getElementById('serieExibida').innerText = roteiro.serie || "(não definida)";
+        document.getElementById('turmaExibida').innerText = roteiro.turma || "(não definida)";
+        document.getElementById('temaExibido').innerText = roteiro.tema || "(nenhum tema definido)";
+        document.getElementById('visibilidadeExibido').innerText = roteiro.visibilidade || "(nenhuma estratégia definida)";
+        if(roteiro.professorNome) document.getElementById('profNomeExibido').innerText = roteiro.professorNome;
+        if(roteiro.professorEscola) document.getElementById('escolaExibida').innerText = roteiro.professorEscola;
+    }
+
+    function mostrarRoteiroCompleto() {
+        if(!roteiro.tema && !roteiro.proposta && !roteiro.disciplina) {
+            alert("Você ainda não criou um roteiro. Preencha os campos e clique em 'Salvar meu roteiro'.");
+            return;
+        }
+        const savedChecklist = localStorage.getItem("mao_massa_checklist");
+        let checklistItems = [];
+        if(savedChecklist) {
+            const c = JSON.parse(savedChecklist);
+            if(c.c1) checklistItems.push("• Explica com suas palavras");
+            if(c.c2) checklistItems.push("• Identifica e corrige erro");
+            if(c.c3) checklistItems.push("• Compara com outras fontes");
+            if(c.c4) checklistItems.push("• Justifica escolha do prompt");
+            if(c.c5) checklistItems.push("• Diário de bordo");
+        }
+        const checklistStr = checklistItems.length ? checklistItems.join("\n") : "Nenhum item marcado";
+        const mapa = localStorage.getItem("mao_massa_mapa_erros");
+        let mapaStr = "Nenhuma simulação salva.";
+        if(mapa) {
+            const m = JSON.parse(mapa);
+            mapaStr = `Texto original: "${m.texto || '—'}"\nCorreção: "${m.correcao || '—'}"`;
+        }
+        const defesa = localStorage.getItem("mao_massa_defesa_oral") || "Nenhuma pergunta salva.";
+        const planilha = localStorage.getItem("mao_massa_planilha") || "Nenhum enunciado salvo.";
+        alert(`📋 ROTEIRO COMPLETO\n\n👩‍🏫 Professor: ${roteiro.professorNome}\n🏫 Escola: ${roteiro.professorEscola}\n📚 Disciplina: ${roteiro.disciplina}\n📖 Série: ${roteiro.serie}\n👥 Turma: ${roteiro.turma}\n\n🎯 Temática: ${roteiro.tema}\n✏️ Proposta: ${roteiro.proposta}\n🔍 Visibilidade: ${roteiro.visibilidade}\n✅ Verificação: ${roteiro.verificacao}\n\n📋 CHECKLIST:\n${checklistStr}\n\n🗺️ MAPA DE ERROS:\n${mapaStr}\n\n🎤 DEFESA ORAL:\n${defesa}\n\n📊 PLANILHAS/PYTHON:\n${planilha}`);
+    }
+
+    // Função para gerar PDF com identidade visual
+    async function gerarPDF() {
+        // Verifica se há dados mínimos
+        if(!roteiro.tema && !roteiro.proposta && !roteiro.disciplina) {
+            alert("Você ainda não criou um roteiro. Salve o roteiro antes de gerar o PDF.");
+            return;
+        }
+        // Coletar dados atualizados do localStorage
+        const nomeProf = document.getElementById('profNome').value.trim() || roteiro.professorNome || "Não informado";
+        const escolaProf = document.getElementById('escolaSelect').value || roteiro.professorEscola || "Não informada";
+        const disciplina = document.getElementById('disciplina').value || roteiro.disciplina || "—";
+        const serie = document.getElementById('serie').value || roteiro.serie || "—";
+        const turma = document.getElementById('turma').value || roteiro.turma || "—";
+        const tema = document.getElementById('tema').value || roteiro.tema || "—";
+        const proposta = document.getElementById('proposta').value || roteiro.proposta || "—";
+        const visibilidade = document.getElementById('visibilidade').value || roteiro.visibilidade || "—";
+        const verificacao = document.getElementById('verificacao').value || roteiro.verificacao || "—";
+        
+        const savedChecklist = localStorage.getItem("mao_massa_checklist");
+        let checklistItens = [];
+        if(savedChecklist) {
+            const c = JSON.parse(savedChecklist);
+            if(c.c1) checklistItens.push("✓ Explica com suas palavras");
+            if(c.c2) checklistItens.push("✓ Identifica e corrige erro");
+            if(c.c3) checklistItens.push("✓ Compara com outras fontes");
+            if(c.c4) checklistItens.push("✓ Justifica escolha do prompt");
+            if(c.c5) checklistItens.push("✓ Diário de bordo");
+        }
+        const checklistStr = checklistItens.length ? checklistItens.join("\n") : "Nenhum item marcado";
+        
+        const savedMapa = localStorage.getItem("mao_massa_mapa_erros");
+        let mapaTexto = "Nenhuma simulação salva.";
+        let mapaCorrecao = "";
+        if(savedMapa) {
+            const m = JSON.parse(savedMapa);
+            if(m.texto) mapaTexto = m.texto;
+            if(m.correcao) mapaCorrecao = m.correcao;
+        }
+        const defesa = localStorage.getItem("mao_massa_defesa_oral") || "Nenhuma pergunta salva.";
+        const planilha = localStorage.getItem("mao_massa_planilha") || "Nenhum enunciado salvo.";
+        
+        // Criar um elemento temporário para renderizar o PDF
+        const pdfContent = document.createElement('div');
+        pdfContent.style.width = '800px';
+        pdfContent.style.backgroundColor = 'white';
+        pdfContent.style.padding = '30px';
+        pdfContent.style.fontFamily = 'Inter, sans-serif';
+        pdfContent.style.color = '#212121';
+        pdfContent.innerHTML = `
+            <div style="text-align: center; border-bottom: 3px solid #d32f2f; padding-bottom: 20px; margin-bottom: 20px;">
+                <img src="https://i.ibb.co/0p01LzxB/logo3de.jpg" alt="Logo SEDUC" style="max-height: 60px; margin-bottom: 10px;">
+                <h1 style="color: #0a2f6c; font-size: 24px; margin: 8px 0;">Mão na massa · IA na Educação</h1>
+                <p style="color: #5f6368;">Formação URE Caieiras · Tecnologia 2026</p>
+            </div>
+            <div style="margin-bottom: 25px;">
+                <h2 style="color: #0a2f6c; border-left: 5px solid #d32f2f; padding-left: 15px;">📋 Planejamento do Roteiro</h2>
+                <table style="width: 100%; margin-top: 15px; border-collapse: collapse;">
+                    <tr><td style="padding: 6px 0;"><strong>Professor(a):</strong></td><td>${nomeProf}</td></tr>
+                    <tr><td style="padding: 6px 0;"><strong>Escola:</strong></td><td>${escolaProf}</td></tr>
+                    <tr><td style="padding: 6px 0;"><strong>Disciplina:</strong></td><td>${disciplina}</td></tr>
+                    <tr><td style="padding: 6px 0;"><strong>Série/Ano:</strong></td><td>${serie}</td></tr>
+                    <tr><td style="padding: 6px 0;"><strong>Turma:</strong></td><td>${turma}</td></tr>
+                    <tr><td style="padding: 6px 0;"><strong>Temática:</strong></td><td>${tema}</td></tr>
+                    <tr><td style="padding: 6px 0;"><strong>Proposta da atividade:</strong></td><td>${proposta}</td></tr>
+                    <tr><td style="padding: 6px 0;"><strong>Visibilidade do raciocínio:</strong></td><td>${visibilidade}</td></tr>
+                    <tr><td style="padding: 6px 0;"><strong>Verificação da aprendizagem:</strong></td><td>${verificacao}</td></tr>
+                </table>
+            </div>
+            <div style="margin-bottom: 25px;">
+                <h2 style="color: #0a2f6c; border-left: 5px solid #d32f2f; padding-left: 15px;">📋 Check-up do aprendizado</h2>
+                <div style="background: #eaf7ea; padding: 12px; border-radius: 12px; margin-top: 8px;">
+                    <pre style="white-space: pre-wrap; font-family: 'Inter', sans-serif; margin: 0;">${checklistStr}</pre>
+                </div>
+            </div>
+            <div style="margin-bottom: 25px;">
+                <h2 style="color: #0a2f6c; border-left: 5px solid #d32f2f; padding-left: 15px;">🗺️ Mapa de erros</h2>
+                <div style="background: #eef3fb; padding: 12px; border-radius: 12px; margin-top: 8px;">
+                    <p><strong>Texto com erro:</strong> ${mapaTexto}</p>
+                    <p><strong>Correção indicada:</strong> ${mapaCorrecao || "—"}</p>
+                </div>
+            </div>
+            <div style="margin-bottom: 25px;">
+                <h2 style="color: #0a2f6c; border-left: 5px solid #d32f2f; padding-left: 15px;">🎤 Defesa oral</h2>
+                <div style="background: #fff8e7; padding: 12px; border-radius: 12px;">${defesa}</div>
+            </div>
+            <div style="margin-bottom: 25px;">
+                <h2 style="color: #0a2f6c; border-left: 5px solid #d32f2f; padding-left: 15px;">📊 Planilhas / Python</h2>
+                <div style="background: #eef3fb; padding: 12px; border-radius: 12px;">${planilha}</div>
+            </div>
+            <div style="text-align: center; margin-top: 30px; font-size: 11px; color: #999; border-top: 1px solid #ddd; padding-top: 15px;">
+                Documento gerado pela plataforma "Mão na massa – Uso educacional de IA" · Baseado no estudo do MIT Media Lab
+            </div>
+        `;
+        document.body.appendChild(pdfContent);
+        
+        try {
+            const canvas = await html2canvas(pdfContent, { scale: 2, backgroundColor: '#ffffff' });
+            const imgData = canvas.toDataURL('image/png');
+            const { jsPDF } = window.jspdf;
+            const pdf = new jsPDF({
+                orientation: 'portrait',
+                unit: 'mm',
+                format: 'a4'
+            });
+            const imgWidth = 210; // A4 width mm
+            const pageHeight = 297;
+            const imgHeight = (canvas.height * imgWidth) / canvas.width;
+            let position = 0;
+            pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+            if (imgHeight > pageHeight) {
+                let heightLeft = imgHeight - pageHeight;
+                while (heightLeft > 0) {
+                    position = heightLeft - imgHeight;
+                    pdf.addPage();
+                    pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+                    heightLeft -= pageHeight;
+                }
+            }
+            pdf.save(`planejamento_ia_${nomeProf.replace(/\s/g, '_')}.pdf`);
+        } catch (error) {
+            console.error('Erro ao gerar PDF:', error);
+            alert('Ocorreu um erro ao gerar o PDF. Tente novamente.');
+        } finally {
+            document.body.removeChild(pdfContent);
+        }
+    }
+
+    // Event listeners
+    document.getElementById('saveUserBtn').addEventListener('click', saveUserData);
+    document.getElementById('salvarRoteiroBtn').addEventListener('click', salvarRoteiro);
+    document.getElementById('mostrarRoteiroBtn').addEventListener('click', mostrarRoteiroCompleto);
+    document.getElementById('resetBtn').addEventListener('click', () => { if(confirm("Apagar todos os dados?")) { localStorage.clear(); location.reload(); } });
+    document.getElementById('gerarPdfBtn').addEventListener('click', gerarPDF);
+    
+    document.getElementById('profNome').addEventListener('input', atualizarExibicaoDadosPessoais);
+    document.getElementById('escolaSelect').addEventListener('change', atualizarExibicaoDadosPessoais);
+    
+    document.getElementById('salvarChecklistBtn')?.addEventListener('click', () => {
+        const checks = {
+            c1: document.getElementById('check1').checked,
+            c2: document.getElementById('check2').checked,
+            c3: document.getElementById('check3').checked,
+            c4: document.getElementById('check4').checked,
+            c5: document.getElementById('check5').checked
+        };
+        localStorage.setItem("mao_massa_checklist", JSON.stringify(checks));
+        document.getElementById('checklistFeedback').innerHTML = "✅ Checklist salvo!";
+        setTimeout(() => document.getElementById('checklistFeedback').innerHTML = "", 2000);
+        atualizarResumoAtividades();
+    });
+    document.querySelector('.btn-salvar-mapa')?.addEventListener('click', () => {
+        const dados = { texto: document.getElementById('mapaErrosTexto').value, correcao: document.getElementById('mapaErrosCorrecao').value };
+        localStorage.setItem("mao_massa_mapa_erros", JSON.stringify(dados));
+        document.querySelector('.feedback-mapa').innerHTML = "✅ Mapa de erros salvo!";
+        setTimeout(() => document.querySelector('.feedback-mapa').innerHTML = "", 2000);
+        atualizarResumoAtividades();
+    });
+    document.querySelector('.btn-salvar-defesa')?.addEventListener('click', () => {
+        localStorage.setItem("mao_massa_defesa_oral", document.getElementById('defesaOralPergunta').value);
+        document.querySelector('.feedback-defesa').innerHTML = "✅ Pergunta salva!";
+        setTimeout(() => document.querySelector('.feedback-defesa').innerHTML = "", 2000);
+        atualizarResumoAtividades();
+    });
+    document.querySelector('.btn-salvar-planilha')?.addEventListener('click', () => {
+        localStorage.setItem("mao_massa_planilha", document.getElementById('planilhaEnunciado').value);
+        document.querySelector('.feedback-planilha').innerHTML = "✅ Enunciado salvo!";
+        setTimeout(() => document.querySelector('.feedback-planilha').innerHTML = "", 2000);
+        atualizarResumoAtividades();
+    });
+    
+    const detalhes = {
+        1: "Grupo 1 (Só IA): menor conectividade cerebral; 83% não conseguiram citar trechos que escreveram; textos muito parecidos; aluno não se sente 'dono' do trabalho.",
+        2: "Grupo 2 (IA + Google): maior atividade cerebral nas áreas visuais e de curadoria; retenção da informação maior que grupo 1; ainda sob influência do Google.",
+        3: "Grupo 3 (Só Google): maior e mais complexa conectividade cerebral; textos mais variados e únicos; quase todos lembraram e citaram o que escreveram."
+    };
+    document.querySelectorAll('.btn-detalhe').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const grupo = e.target.getAttribute('data-grupo');
+            const detalheDiv = document.getElementById('detalheGrupo');
+            detalheDiv.style.display = 'block';
+            detalheDiv.innerHTML = `<strong>🔬 Detalhamento do Grupo ${grupo}</strong><br>${detalhes[grupo]}<br><button id="fecharDetalhe" class="btn-interativo" style="margin-top:12px;">Fechar</button>`;
+            document.getElementById('fecharDetalhe')?.addEventListener('click', () => { detalheDiv.style.display = 'none'; });
+        });
+    });
+    
+    document.getElementById('simBtn')?.addEventListener('click', () => {
+        document.getElementById('reflexaoMsg').innerHTML = "👍 Ótimo! Vamos transformar isso em oportunidade de aprendizado.";
+        localStorage.setItem("mao_massa_reflexao", "sim");
+    });
+    document.getElementById('naoBtn')?.addEventListener('click', () => {
+        document.getElementById('reflexaoMsg').innerHTML = "👀 Importante se preparar! A IA veio para ficar.";
+        localStorage.setItem("mao_massa_reflexao", "nao");
+    });
+    
+    loadUserData();
+    atualizarExibicaoRoteiro();
+</script>
+</body>
+</html>
